@@ -10,7 +10,7 @@ pipeline AirportsPipeline {
         encoding: "utf8";
     }
 
-    // Transformer Block: Converts airports TextFile to Sheet (In: TextFile, Out: Sheet)
+    // Transformer Block: Converts airports TextFile to the Sheet (In: TextFile, Out: Sheet)
     block AirportsCSVInterpreter oftype CSVInterpreter {
         delimiter: ";";
     }
