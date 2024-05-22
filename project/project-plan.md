@@ -27,13 +27,13 @@ In summary, this analysis aims to decrease uncertainties about traffic condition
 
 ### Datasource1: Road Traffic Volume Data in New York
 * Metadata URL: [https://catalog.data.gov/dataset/traffic-volume-counts](https://catalog.data.gov/dataset/traffic-volume-counts)
-* Sample Data URL: [https://data.cityofnewyork.us/api/views/7ym2-wayt/rows.csv ](https://data.cityofnewyork.us/api/views/7ym2-wayt/rows.csv )
-
+* Sample Data URL: [https://data.cityofnewyork.us/api/views/btm5-ppia/rows.csv](https://data.cityofnewyork.us/api/views/btm5-ppia/rows.csv)
+* Data Type: CSV
 
 
 ### Datasource2: Weather and Climate Data of New York
 * Metadata URL: [https://www.visualcrossing.com/weather/weather-data-services/New%20York?v=api](https://www.visualcrossing.com/weather/weather-data-services/New%20York?v=api)
-* Sample Data URL: [  https://data.cityofnewyork.us/api/views/btm5-ppia/rows.csv](https://data.cityofnewyork.us/api/views/btm5-ppia/rows.csv )
+* Sample Data URL: [https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/retrievebulkdataset?&key=KQAFERHQEGHPQE3MEQYXNDFHZ&taskId=1e6f58df853092fcba96243810d2ec19&zip=false](https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/retrievebulkdataset?&key=KQAFERHQEGHPQE3MEQYXNDFHZ&taskId=1e6f58df853092fcba96243810d2ec19&zip=false)
 * Data Type: CSV
 
 This data source will provide weather and climate data of New York city, including temperature, daily minimum and maximum air temperature, yearly precipitation total, maximum snow depth, average wind direction and speed, peak wind gust, average sea-level air pressure, and monthly sunshine total.

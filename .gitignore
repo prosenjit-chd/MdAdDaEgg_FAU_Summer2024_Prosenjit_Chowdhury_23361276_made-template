@@ -1,3 +1,4 @@
 # Database file
 /project/fau_data_engineering_ss23.sqlite
 /exercises/*.sqlite
+/project/venv
