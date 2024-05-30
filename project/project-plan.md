@@ -4,7 +4,7 @@
 
 <!-- Describe your data science project. -->
 
-This data science project aims to analyze **the weather and climate conditions in New York alongside its road traffic volume** by using data from several automatic figuring out terminalss across the city. The objective is to evaluate whether New York is a suitable city for vehicle users. Two open data sources will be utilized: [dataGov](https://catalog.data.gov/dataset) for information on road traffic volume in New York and [visualCrossing](https://www.visualcrossing.com/weather/weather-data-services/) for weather and climate data. The analysis will focus on identifying patterns and trends in road traffic volume throughout 2012 to assess the city's suitability for road traffic. Additionally, the weather and climate data will be examined to determine if New York's conditions are favorable for road traffic.
+This data science project aims to analyze **the weather and climate conditions in New York alongside its road traffic volume** by using data from several automatic figuring out terminalss across the city. The objective is to evaluate whether New York is a suitable city for vehicle users. Two open data sources will be utilized: [dataGov](https://catalog.data.gov/dataset) for information on road traffic volume in New York and [Meteostat](https://meteostat.net/en/) for weather and climate data. The analysis will focus on identifying patterns and trends in road traffic volume throughout 2012 to assess the city's suitability for road traffic. Additionally, the weather and climate data will be examined to determine if New York's conditions are favorable for road traffic.
 
 ## Rationale
 
@@ -32,8 +32,8 @@ In summary, this analysis aims to decrease uncertainties about traffic condition
 
 
 ### Datasource2: Weather and Climate Data of New York
-* Metadata URL: [https://www.visualcrossing.com/weather/weather-data-services/New%20York?v=api](https://www.visualcrossing.com/weather/weather-data-services/New%20York?v=api)
-* Sample Data URL: [https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/retrievebulkdataset?&key=KQAFERHQEGHPQE3MEQYXNDFHZ&taskId=1e6f58df853092fcba96243810d2ec19&zip=false](https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/retrievebulkdataset?&key=KQAFERHQEGHPQE3MEQYXNDFHZ&taskId=1e6f58df853092fcba96243810d2ec19&zip=false)
+* Metadata URL: [https://meteostat.net/en/place/us/new-york-city?s=72502&t=2012-01-01/2012-12-31](https://meteostat.net/en/place/us/new-york-city?s=72502&t=2012-01-01/2012-12-31)
+* Sample Data URL: [https://bulk.meteostat.net/v2/hourly/72502.csv.gz](https://bulk.meteostat.net/v2/hourly/72502.csv.gz)
 * Data Type: CSV
 
 This data source will provide weather and climate data of New York city, including temperature, daily minimum and maximum air temperature, yearly precipitation total, maximum snow depth, average wind direction and speed, peak wind gust, average sea-level air pressure, and monthly sunshine total.
