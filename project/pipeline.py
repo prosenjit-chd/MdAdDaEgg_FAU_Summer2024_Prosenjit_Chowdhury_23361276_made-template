@@ -6,23 +6,24 @@ import gzip
 from io import BytesIO
 import os
 
-def fetch_data(url, compressed=False):
-    print(f"Fetching data from {url}...")
-    response = requests.get(url)
+def retrieve_data(source_url, compressed=False):
+    print(f"Retrieving data from {source_url}...")
+    response = requests.get(source_url)
     if compressed:
-        print("Decompressing data...")
-        return gzip.decompress(response.content)
+        print("Decompressing the data...")
+        data = gzip.decompress(response.content)
+        return data
     else:
         return response.content.decode('utf-8')
 
-def save_to_sqlite(df, db_path, table_name):
-    print(f"Saving data to {table_name} table in {db_path}...")
-    conn = sqlite3.connect(db_path)
-    cursor = conn.cursor()
+def save_dataframe_to_db(dataframe, database_file, table_name):
+    print(f"Storing data in {table_name} table in {database_file}...")
+    conn = sqlite3.connect(database_file)
+    cur = conn.cursor()
     
     # Create table without auto-incremented primary key
     if table_name == 'traffic':
-        cursor.execute(f"""
+        cur.execute(f"""
         CREATE TABLE IF NOT EXISTS {table_name} (
             id INTEGER PRIMARY KEY,
             month TEXT,
@@ -30,7 +31,7 @@ def save_to_sqlite(df, db_path, table_name):
         );
         """)
     elif table_name == 'weather':
-        cursor.execute(f"""
+        cur.execute(f"""
         CREATE TABLE IF NOT EXISTS {table_name} (
             id INTEGER PRIMARY KEY,
             month TEXT,
@@ -42,89 +43,88 @@ def save_to_sqlite(df, db_path, table_name):
         """)
     
     # Insert data into table
-    for row in df.itertuples(index=False):
+    for row in dataframe.itertuples(index=False):
         if table_name == 'traffic':
-            cursor.execute(f"""
+            cur.execute(f"""
             INSERT INTO {table_name} (month, traffics) VALUES (?, ?)
             """, (row.month, row.traffics))
         elif table_name == 'weather':
-            cursor.execute(f"""
+            cur.execute(f"""
             INSERT INTO {table_name} (month, tavg, snow, prcp, wspd) VALUES (?, ?, ?, ?, ?)
             """, (row.month, row.tavg, row.snow, row.prcp, row.wspd))
     
     conn.commit()
     conn.close()
 
-
-def transform_traffic_data(data):
-    print("Transforming traffic data...")
-    df = pd.read_csv(io.StringIO(data))
+def reshape_traffic_data(raw_data):
+    print("Reshaping traffic data...")
+    data_frame = pd.read_csv(io.StringIO(raw_data))
     
     # Filter data for the year 2012
-    df['Date'] = pd.to_datetime(df['Date'])
-    df_2012 = df[df['Date'].dt.year == 2012]
+    data_frame['Date'] = pd.to_datetime(data_frame['Date'])
+    data_2012 = data_frame[data_frame['Date'].dt.year == 2012]
     
-    # Extract the necessary columns (index 7 to 30) and drop rows where all selected columns are empty
-    df_2012_subset = df_2012.iloc[:, 7:31].dropna(how='all')
+    # Extract necessary columns (index 7 to 30) and drop rows where all selected columns are empty
+    data_2012_filtered = data_2012.iloc[:, 7:31].dropna(how='all')
     
-    # Add the 'Date' column back for grouping
-    df_2012_subset['Date'] = df_2012['Date'].loc[df_2012_subset.index]
+    # Add 'Date' column back for grouping
+    data_2012_filtered['Date'] = data_2012['Date'].loc[data_2012_filtered.index]
     
     # Create 'Month' column for grouping
-    df_2012_subset['Month'] = df_2012_subset['Date'].dt.month_name()
+    data_2012_filtered['Month'] = data_2012_filtered['Date'].dt.month_name()
     
-    # Sum the values for each month, excluding the 'Date' and 'Month' columns from summation
-    monthly_sums = df_2012_subset.groupby('Month').sum(numeric_only=True).sum(axis=1)
+    # Sum the values for each month, excluding 'Date' and 'Month' columns from summation
+    monthly_totals = data_2012_filtered.groupby('Month').sum(numeric_only=True).sum(axis=1)
     
     # Create the final DataFrame
     month_order = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-    monthly_data = pd.DataFrame({
-        'month': monthly_sums.index.str[:3],
-        'traffics': monthly_sums.values
+    monthly_traffic = pd.DataFrame({
+        'month': monthly_totals.index.str[:3],
+        'traffics': monthly_totals.values
     })
     
     # Sorting the month column in the specified order
-    monthly_data['month'] = pd.Categorical(monthly_data['month'], categories=month_order, ordered=True)
-    monthly_data = monthly_data.sort_values('month').reset_index(drop=True)
+    monthly_traffic['month'] = pd.Categorical(monthly_traffic['month'], categories=month_order, ordered=True)
+    monthly_traffic = monthly_traffic.sort_values('month').reset_index(drop=True)
     
-    return monthly_data
+    return monthly_traffic
 
-def transform_weather_data(data):
-    print("Transforming weather data...")
-    selected_columns = [0, 3, 4, 5, 8]
-    df = pd.read_csv(BytesIO(data), header=None, usecols=selected_columns)
-    df.columns = ['date', 'tavg', 'snow', 'prcp', 'wspd']
-    df['date'] = pd.to_datetime(df['date'])
-    df_2012 = df[df['date'].dt.year == 2012]
-    df_2012 = df_2012.dropna()
-    df_2012['month'] = df_2012['date'].dt.strftime('%b')
-    monthly_avg = df_2012.groupby('month').mean().reset_index()
-    months_order = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-    monthly_avg['month'] = pd.Categorical(monthly_avg['month'], categories=months_order, ordered=True)
-    monthly_avg = monthly_avg.sort_values('month')
-    monthly_avg = monthly_avg.drop(columns=['date'], errors='ignore')
-    monthly_avg[['tavg', 'snow', 'prcp', 'wspd']] = monthly_avg[['tavg', 'snow', 'prcp', 'wspd']].round(2)
-    return monthly_avg
+def reshape_weather_data(raw_data):
+    print("Reshaping weather data...")
+    columns_required = [0, 3, 4, 5, 8]
+    data_frame = pd.read_csv(BytesIO(raw_data), header=None, usecols=columns_required)
+    data_frame.columns = ['date', 'tavg', 'snow', 'prcp', 'wspd']
+    data_frame['date'] = pd.to_datetime(data_frame['date'])
+    data_2012 = data_frame[data_frame['date'].dt.year == 2012]
+    data_2012 = data_2012.dropna()
+    data_2012['month'] = data_2012['date'].dt.strftime('%b')
+    monthly_avg_data = data_2012.groupby('month').mean().reset_index()
+    months_sequence = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+    monthly_avg_data['month'] = pd.Categorical(monthly_avg_data['month'], categories=months_sequence, ordered=True)
+    monthly_avg_data = monthly_avg_data.sort_values('month')
+    monthly_avg_data = monthly_avg_data.drop(columns=['date'], errors='ignore')
+    monthly_avg_data[['tavg', 'snow', 'prcp', 'wspd']] = monthly_avg_data[['tavg', 'snow', 'prcp', 'wspd']].round(2)
+    return monthly_avg_data
 
-def main():
+def execute_pipeline():
     # Ensure the ../data directory exists
     os.makedirs('../data', exist_ok=True)
     
-    db_path = '../data/MADE.sqlite'
+    database_file_path = '../data/MADE.sqlite'
     
     # Process traffic data
-    traffic_url = "https://data.cityofnewyork.us/api/views/btm5-ppia/rows.csv"
-    traffic_data = fetch_data(traffic_url)
-    traffic_df = transform_traffic_data(traffic_data)
-    save_to_sqlite(traffic_df, db_path, 'traffic')
+    traffic_data_url = "https://data.cityofnewyork.us/api/views/btm5-ppia/rows.csv"
+    raw_traffic_data = retrieve_data(traffic_data_url)
+    traffic_data_frame = reshape_traffic_data(raw_traffic_data)
+    save_dataframe_to_db(traffic_data_frame, database_file_path, 'traffic')
     print("Monthly traffic data for the year 2012 has been saved to SQLite database.")
     
     # Process weather data
-    weather_url = "https://bulk.meteostat.net/v2/hourly/72502.csv.gz"
-    weather_data = fetch_data(weather_url, compressed=True)
-    weather_df = transform_weather_data(weather_data)
-    save_to_sqlite(weather_df, db_path, 'weather')
+    weather_data_url = "https://bulk.meteostat.net/v2/hourly/72502.csv.gz"
+    raw_weather_data = retrieve_data(weather_data_url, compressed=True)
+    weather_data_frame = reshape_weather_data(raw_weather_data)
+    save_dataframe_to_db(weather_data_frame, database_file_path, 'weather')
     print("Monthly averaged data for the year 2012 has been saved to SQLite database.")
 
 if __name__ == "__main__":
-    main()
+    execute_pipeline()
