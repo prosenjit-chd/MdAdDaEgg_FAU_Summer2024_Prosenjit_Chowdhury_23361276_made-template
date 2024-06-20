@@ -1,0 +1,78 @@
+pipeline GTFSPipeline {
+
+    // Extracts meteorological data from a given URL.
+    block GTFSTaskExtractor oftype HttpExtractor {
+        url: "https://gtfs.rhoenenergie-bus.de/GTFS.zip";
+    }
+
+    // Processes the downloaded file as a ZIP archive.
+    block ZipAllTheFileInterpreter oftype ArchiveInterpreter {
+        archiveType: "zip";
+    }
+
+    // Selects a particular file from the extracted contents
+    block StopsWritingTheText oftype FilePicker {
+        path: "/stops.txt";
+    }
+
+    // Processes the chosen file as a TXT file
+    block StopsWritingTheTextInterpreter oftype TextFileInterpreter {}
+
+
+    block CSVFileTaker oftype CSVInterpreter {
+        enclosing: '"';
+        enclosingEscape: '"';
+    }
+
+    // Validates data for Coordinate
+    valuetype CoordinateTypeDifinder oftype decimal {
+        constraints: [LatLonRange];
+    }
+
+    constraint LatLonRange oftype RangeConstraint {
+        lowerBound: -90;
+        lowerBoundInclusive: true;
+        upperBound: 90;
+        upperBoundInclusive: true;
+    }
+
+     // Validates data for Zone
+    valuetype ZoneType oftype integer {
+    constraints: [Zone1645];
+    }
+
+    constraint Zone1645 oftype RangeConstraint {
+        lowerBound: 1645;
+        lowerBoundInclusive: true;
+        upperBound: 1645;
+        upperBoundInclusive: true;
+    }
+    
+    // Transforms the Stops Sheet into a Table, removing unnecessary columns and renaming headers (In: Sheet, Out: Table)
+    block StopsTheMappingFile oftype TableInterpreter {
+        header: true;
+        columns: [
+            "stop_id" oftype integer,
+            "stop_name" oftype text,
+            "stop_lat" oftype CoordinateTypeDifinder,
+            "stop_lon" oftype CoordinateTypeDifinder,
+            "zone_id" oftype ZoneType,
+        ];
+    }
+    // Create a sequence linking all blocks in the GTFSPipeline.
+    GTFSTaskExtractor
+        -> ZipAllTheFileInterpreter
+        -> StopsWritingTheText
+        -> StopsWritingTheTextInterpreter
+        -> CSVFileTaker
+        -> StopsTheMappingFile
+        -> StopsTheLoaderFile;
+
+
+    // Imports the processed data into an SQLite table
+    block StopsTheLoaderFile oftype SQLiteLoader {
+        table: "stops";
+        file: "./gtfs.sqlite";
+    }
+
+}
