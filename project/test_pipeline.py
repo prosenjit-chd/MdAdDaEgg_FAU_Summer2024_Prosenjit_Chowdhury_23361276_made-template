@@ -1,7 +1,7 @@
 import unittest
 import os
 import sqlite3
-from pipeline import execute_pipeline  # Import the main function from your pipeline script
+from project.pipeline import execute_pipeline  # Import the main function from your pipeline script
 
 class DataPipelineUnitTests(unittest.TestCase):
 
