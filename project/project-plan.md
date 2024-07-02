@@ -6,6 +6,10 @@
 
 This data science project aims to analyze **the weather and climate conditions in New York alongside its road traffic volume** by using data from several automatic figuring out terminalss across the city. The objective is to evaluate whether New York is a suitable city for vehicle users. Two open data sources will be utilized: [dataGov](https://catalog.data.gov/dataset) for information on road traffic volume in New York and [Meteostat](https://meteostat.net/en/) for weather and climate data. The analysis will focus on identifying patterns and trends in road traffic volume throughout 2012 to assess the city's suitability for road traffic. Additionally, the weather and climate data will be examined to determine if New York's conditions are favorable for road traffic.
 
+## Main goal of this Project
+
+The main goal of this data engineering project is to integrate and analyze traffic volume and weather data for New York City to evaluate the city's traffic management strategies and their effectiveness in different weather conditions. By examining trends in traffic counts from the New York City dataset from 2012 and the city's weather patterns, the project aims to determine if New York City's infrastructure and climate support an efficient and manageable traffic flow. This analysis will provide insights into how weather conditions impact traffic volumes and will help in developing strategies to improve traffic management throughout the year.
+
 ## Rationale
 
 <!-- Outline the impact of the analysis. Which problems it solves. -->
